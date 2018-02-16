@@ -1,0 +1,2 @@
+class GeneralDTO:
+    attribs = {}
