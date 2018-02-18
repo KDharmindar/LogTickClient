@@ -344,7 +344,7 @@ class Ui_Dialog(QDialog):
     def send_to_server_rest(self, data_to_send, server_url):
         try:
             resp = requests.post(server_url, data=data_to_send)
-            QMessageBox.Abort(self,resp.content)
+            #QMessageBox.about(self,resp.content)
         except Exception as e:
             QMessageBox.about(self, e.args[0])
     
