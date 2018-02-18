@@ -80,7 +80,7 @@ class DBHelper(object):
         
         return self.current_process_data
     
-    def update_process_without_orm(self,cur_process_data):
+    def update_process_without_orm(self, cur_process_data):
         conn = sqlite3.connect(self.database_name)
         cur = conn.cursor()
         

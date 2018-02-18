@@ -209,29 +209,24 @@ class Ui_Dialog(QDialog):
             self.current_process_data.duration = self.current_time
             self.current_process_data = DBHelper.update_process_without_orm(DBHelper, self.current_process_data)
             
-            self.capture_current_Screen()
+            self.capture_current_Screen_test()
+            self.current_process_data.image_data = self.image_data_string.decode('utf-8')
+            #self.current_process_data.image_data = self.image_data
+
+            serialized_data = json.dumps(self.current_process_data.__dict__)
             
-#             current_calendar_week_id = DBHelper.current_calendar_week.id
-#             
-            #process_data = ProcessData()
-#             process_data.process_id = self.current_process.id
-            #process_data.project_id = self.current_selected_project.id
-#             process_data.task_id = self.current_selected_task.id
-#             process_data.weekend_id = current_calendar_week_id
-#             process_data.user_id = 1
-#             process_data.start_time = self.current_process.start_time
-#             process_data.end_time = self.current_process.end_time
-            self.current_process_data.image_data = self.image_data
+            general_dto = {"process_data":serialized_data}
+            
+            
+            self.send_to_server_rest(general_dto, 'http://127.0.0.1:8000/process_data/')
+
 # 
-            general_dto = { "process_data" : self.current_process_data }
             #prepared_process_data = self.prepare_data_to_send()
 #           
-            serialized_data = json.dumps(general_dto)
 
 #             serialized_data = pickle.dumps(process_data)
             #prepared_process_data = self.prepare_data_to_send()
             #serialized_data = pickle.dumps(self.current_process_data)
-            self.send_to_server_rest(serialized_data, 'http://127.0.0.1:8000/process_data/')
             #self.send_to_server(serialized_data)
             
 
