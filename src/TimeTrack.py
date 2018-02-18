@@ -186,7 +186,7 @@ class Ui_Dialog(QDialog):
 #             process_data.user_id = 1
 #             process_data.start_time = self.current_process.start_time
 #             process_data.end_time = self.current_process.end_time
-            self.current_process_data.image_data = self.image_data_string
+            self.current_process_data.image_data = self.image_data_string.decode('utf-8')
             
             #general_dto = { "process_data" : self.current_process_data }
             #prepared_process_data = self.prepare_data_to_send()
@@ -209,29 +209,24 @@ class Ui_Dialog(QDialog):
             self.current_process_data.duration = self.current_time
             self.current_process_data = DBHelper.update_process_without_orm(DBHelper, self.current_process_data)
             
-            self.capture_current_Screen()
+            self.capture_current_Screen_test()
+            self.current_process_data.image_data = self.image_data_string.decode('utf-8')
+            #self.current_process_data.image_data = self.image_data
+
+            serialized_data = json.dumps(self.current_process_data.__dict__)
             
-#             current_calendar_week_id = DBHelper.current_calendar_week.id
-#             
-            #process_data = ProcessData()
-#             process_data.process_id = self.current_process.id
-            #process_data.project_id = self.current_selected_project.id
-#             process_data.task_id = self.current_selected_task.id
-#             process_data.weekend_id = current_calendar_week_id
-#             process_data.user_id = 1
-#             process_data.start_time = self.current_process.start_time
-#             process_data.end_time = self.current_process.end_time
-            self.current_process_data.image_data = self.image_data
+            general_dto = {"process_data":serialized_data}
+            
+            
+            self.send_to_server_rest(general_dto, 'http://127.0.0.1:8000/process_data/')
+
 # 
-            general_dto = { "process_data" : self.current_process_data }
             #prepared_process_data = self.prepare_data_to_send()
 #           
-            serialized_data = json.dumps(general_dto)
 
 #             serialized_data = pickle.dumps(process_data)
             #prepared_process_data = self.prepare_data_to_send()
             #serialized_data = pickle.dumps(self.current_process_data)
-            self.send_to_server_rest(serialized_data, 'http://127.0.0.1:8000/process_data/')
             #self.send_to_server(serialized_data)
             
 
@@ -315,16 +310,16 @@ class Ui_Dialog(QDialog):
     def capture_current_Screen_test(self):
         try:
             self.screen_shots += 1
-            ts = time.time()
-            file_name = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H %M %S')            
+            time_stamp = time.time()
+            file_name = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H %M %S')            
             self.current_image_name = file_name
             
-            self.image_data = io.BytesIO()
+            binary_image_data = io.BytesIO()
             
-            im = ImageGrab.grab()
-            im.save(self.image_data,format="JPEG")
-            im.close()
-            self.image_data_string = base64.b64encode(self.image_data.getvalue())
+            screen_capture = ImageGrab.grab()
+            screen_capture.save(binary_image_data,format="JPEG")
+            screen_capture.close()
+            self.image_data_string = base64.b64encode(binary_image_data.getvalue())
             
              
         except Exception as ex:
