@@ -122,7 +122,6 @@ class Ui_Dialog(QDialog):
         self.current_week()
 
     def btnStartTimer_clicked(self):
-        #self.create_process()
         self.create_process()
         self.repeatedTimer.start()
         
@@ -153,8 +152,6 @@ class Ui_Dialog(QDialog):
             return process_data
         except Exception as ex:
             self.show_exception(ex)
-                
-
     
     def create_process(self):
         try:
