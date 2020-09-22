@@ -27,6 +27,11 @@ import json
 import jwt
 import requests
 import base64
+import sys
+import os
+import qdarkgraystyle
+import qdarkstyle
+
 # Model class to send image data to the server
 class ProcessScreen:
     process_id = 0
@@ -120,6 +125,7 @@ class Ui_Dialog(QDialog):
         
         DBHelper.initialize_helper(DBHelper)
         self.current_week()
+        self.setWindowOpacity(0.8)
 
     def btnStartTimer_clicked(self):
         self.create_process()
@@ -130,6 +136,13 @@ class Ui_Dialog(QDialog):
         self.stop_process()
     
     def show_exception(self, ex):
+        print("Oops!", sys.exc_info()[0], "occurred.", str(ex.args[0]))
+
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+
+
         err_msg = QMessageBox()
         err_msg.setIcon(QMessageBox.Critical)
         err_msg.setText(str(ex.args[0]))
@@ -155,13 +168,16 @@ class Ui_Dialog(QDialog):
     
     def create_process(self):
         try:
+            print("Process starting...")
             self.isStarted = True
             selected_project_id = self.current_selected_project.id
+            print("selected project id set...")
             selected_task_id = self.current_selected_task.id
             current_process_start_time = time.time()
             current_process_current_time = self.current_time
             current_process_end_time = 0
             
+            print("fetching data from db..")
             self.current_process_data = DBHelper.create_process_without_orm(DBHelper,
                                             selected_task_id, 
                                             selected_project_id, 
@@ -171,8 +187,10 @@ class Ui_Dialog(QDialog):
                                             1
                                             )
             
+
+            print("initializing screen capture...")
             self.capture_current_Screen_test()
-            
+            print("screen capture finalized...")
 #             current_calendar_week_id = DBHelper.current_calendar_week.id
 #             
             
@@ -306,18 +324,24 @@ class Ui_Dialog(QDialog):
     #connections
     def capture_current_Screen_test(self):
         try:
+            print("Image capture started...")
             self.screen_shots += 1
             time_stamp = time.time()
-            file_name = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H %M %S')            
+            file_name = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H %M %S')
+            print("File name created...")            
             self.current_image_name = file_name
             
             binary_image_data = io.BytesIO()
             
+            print("Before image capture")
             screen_capture = ImageGrab.grab()
+            print("After image capture")
             screen_capture.save(binary_image_data,format="JPEG")
+            print("saving image capture")
             screen_capture.close()
+            print("image capture connection close")
             self.image_data_string = base64.b64encode(binary_image_data.getvalue())
-            
+            print("image converted to string data.")
              
         except Exception as ex:
             self.show_exception(ex)
@@ -417,14 +441,16 @@ class Ui_Dialog(QDialog):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.lblTrackTime.setText(_translate("Dialog", "02:55:45"))
-        self.btnStartTimer.setText(_translate("Dialog", "Start Timer"))
-        self.btnStopTimer.setText(_translate("Dialog", "Stop Timer"))
+        Dialog.setWindowTitle(_translate("Dialog", "LogTick"))
+        self.lblTrackTime.setText(_translate("Dialog", "00:00:00"))
+        self.btnStartTimer.setText(_translate("Dialog", "Start"))
+        self.btnStopTimer.setText(_translate("Dialog", "Stop"))
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyleSheet(qdarkgraystyle.load_stylesheet())
+    
     ui = Ui_Dialog()
     #ui.setupUi()
     ui.load_projects()
