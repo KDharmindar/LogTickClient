@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 from threading import Timer
 import time 
 from PyQt5.QtWidgets import QMessageBox
@@ -126,6 +126,11 @@ class Ui_Dialog(QDialog):
         DBHelper.initialize_helper(DBHelper)
         self.current_week()
         self.setWindowOpacity(0.8)
+
+        # this will hide the title bar 
+        #self.setWindowFlag(Qt.FramelessWindowHint)
+
+
 
     def btnStartTimer_clicked(self):
         self.create_process()
