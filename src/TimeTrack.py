@@ -31,6 +31,94 @@ import sys
 import os
 import qdarkgraystyle
 import qdarkstyle
+from PyQt5.QtCore import QPoint
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QFrame
+
+
+
+class CustomizedTitleBar(QWidget):
+
+    def __init__(self, parent):
+        super(CustomizedTitleBar, self).__init__()
+        self.parent = parent
+        print(self.parent.width())
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.title = QLabel("Pro Teammate")
+
+        btn_size = 35
+
+        self.btn_close = QPushButton("x")
+        self.btn_close.clicked.connect(self.btn_close_clicked)
+        self.btn_close.setFixedSize(btn_size,btn_size)
+        self.btn_close.setStyleSheet("background-color: red;")
+
+        self.btn_min = QPushButton("-")
+        self.btn_min.clicked.connect(self.btn_min_clicked)
+        self.btn_min.setFixedSize(btn_size, btn_size)
+        self.btn_min.setStyleSheet("background-color: gray;")
+
+        self.btn_max = QPushButton("+")
+        self.btn_max.clicked.connect(self.btn_max_clicked)
+        self.btn_max.setFixedSize(btn_size, btn_size)
+        self.btn_max.setStyleSheet("background-color: gray;")
+
+        self.title.setFixedHeight(35)
+        self.title.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.title)
+        self.layout.addWidget(self.btn_min)
+        self.layout.addWidget(self.btn_max)
+        self.layout.addWidget(self.btn_close)
+
+        self.title.setStyleSheet("""
+            background-color: #356974;
+            color: white;
+        """)
+        self.setLayout(self.layout)
+
+        self.start = QPoint(0, 0)
+        self.pressing = False
+
+    def resizeEvent(self, QResizeEvent):
+        super(CustomizedTitleBar, self).resizeEvent(QResizeEvent)
+        self.title.setFixedWidth(self.parent.width())
+
+    def mousePressEvent(self, event):
+        self.start = self.mapToGlobal(event.pos())
+        self.pressing = True
+
+    def mouseMoveEvent(self, event):
+        if self.pressing:
+            self.end = self.mapToGlobal(event.pos())
+            self.movement = self.end-self.start
+            self.parent.setGeometry(self.mapToGlobal(self.movement).x(),
+                                self.mapToGlobal(self.movement).y(),
+                                self.parent.width(),
+                                self.parent.height())
+            self.start = self.end
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.pressing = False
+
+
+    def btn_close_clicked(self):
+        self.parent.close()
+
+    def btn_max_clicked(self):
+        self.parent.showMaximized()
+
+    def btn_min_clicked(self):
+        self.parent.showMinimized()
+
+
+
+
 
 # Model class to send image data to the server
 class ProcessScreen:
@@ -71,12 +159,17 @@ class Ui_Dialog(QDialog):
         
     def setupUi(self):
         self.setObjectName("Dialog")
-        self.resize(542, 520)
+        self.resize(532, 520)
+        self.mainFrame = QtWidgets.QFrame(self)
+        
+        
+
+
         self.lblTrackTime = QtWidgets.QLabel(self)
         self.lblTrackTime.setGeometry(QtCore.QRect(260, 20, 261, 81))
         font = QtGui.QFont()
         font.setFamily("Candara")
-        font.setPointSize(55)
+        font.setPointSize(45)
         font.setBold(True)
         font.setWeight(75)
         font.setKerning(True)
@@ -89,7 +182,8 @@ class Ui_Dialog(QDialog):
         self.btnStopTimer.setGeometry(QtCore.QRect(450, 490, 75, 23))
         self.btnStopTimer.setObjectName("btnStopTimer")
         self.project_list = QtWidgets.QListWidget(self)
-        self.project_list.setGeometry(QtCore.QRect(10, 30, 171, 451))
+        self.project_list.setGeometry(QtCore.QRect(10, 65, 171, 441))
+        self.project_list.alternatingRowColors()
         font = QtGui.QFont()
         font.setPointSize(13)
         self.project_list.setFont(font)
@@ -125,11 +219,21 @@ class Ui_Dialog(QDialog):
         
         DBHelper.initialize_helper(DBHelper)
         self.current_week()
-        self.setWindowOpacity(0.8)
+        #self.setWindowOpacity(0.8)
 
-        # this will hide the title bar 
-        #self.setWindowFlag(Qt.FramelessWindowHint)
+        # Custom Title bar initialization
+        self.layout  = QVBoxLayout()
+        self.layout.addWidget(CustomizedTitleBar(self))
+        self.setLayout(self.layout)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.addStretch(-1)
+        self.setMinimumSize(400,500)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.pressing = False
 
+        #shadow = QGraphicsDropShadowEffect(blurRadius=50, xOffset=30, yOffset=30)
+        #self.setGraphicsEffect(shadow)
+        self.project_list.setFrameShadow(QFrame.Panel | QFrame.Raised)
 
 
     def btnStartTimer_clicked(self):
@@ -145,7 +249,7 @@ class Ui_Dialog(QDialog):
 
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
+        #print(exc_type, fname, exc_tb.tb_lineno)
 
 
         err_msg = QMessageBox()
