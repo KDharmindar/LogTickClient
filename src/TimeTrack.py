@@ -39,6 +39,7 @@ from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QFrame
+import weakref
 
 
 
@@ -109,6 +110,9 @@ class CustomizedTitleBar(QWidget):
 
     def btn_close_clicked(self):
         self.parent.close()
+        uiDialog = self.parent.parent
+        uiDialog.close()
+        
 
     def btn_max_clicked(self):
         self.parent.showMaximized()
@@ -150,20 +154,23 @@ class RepeatedTimer(object):
     def stop(self):
         self._timer.cancel()
         self.is_running = False
-        
+
 
 class Ui_Dialog(QDialog):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.mainFrame = MainFrame(self)
+
+class MainFrame(QFrame):
+    def __init__(self, parent=Ui_Dialog):
+        QFrame.__init__(self, parent)
         self.setupUi()
-        
+        self.parent = parent
+
     def setupUi(self):
         self.setObjectName("Dialog")
         self.resize(532, 520)
-        self.mainFrame = QtWidgets.QFrame(self)
-        
-        
-
 
         self.lblTrackTime = QtWidgets.QLabel(self)
         self.lblTrackTime.setGeometry(QtCore.QRect(260, 20, 261, 81))
@@ -228,7 +235,6 @@ class Ui_Dialog(QDialog):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.addStretch(-1)
         self.setMinimumSize(400,500)
-        self.setWindowFlags(Qt.FramelessWindowHint)
         self.pressing = False
 
         #shadow = QGraphicsDropShadowEffect(blurRadius=50, xOffset=30, yOffset=30)
@@ -562,6 +568,6 @@ if __name__ == "__main__":
     
     ui = Ui_Dialog()
     #ui.setupUi()
-    ui.load_projects()
+    ui.mainFrame.load_projects()
     ui.show()
     sys.exit(app.exec_())
